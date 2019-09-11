@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ToDoist</string>
+    <string name="login_hint">login</string>
+    <string name="password_hint">password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="welcome">WELCOME</string>
+</resources>
