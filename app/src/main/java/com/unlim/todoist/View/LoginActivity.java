@@ -17,14 +17,13 @@ import com.unlim.todoist.Presenter.ILoginPresenter;
 import com.unlim.todoist.Presenter.LoginPresenter;
 import com.unlim.todoist.R;
 
-public class LoginActivity extends AppCompatActivity implements ILoginView {
+public class LoginActivity extends AppCompatActivity implements ILoginView, ServiceConnection {
 
     private ILoginPresenter loginPresenter;
     private EditText etLogin;
     private EditText etPassword;
     private Button btnSingIn;
-    private NetworkService networkService;
-    private boolean isBound = false;
+    private boolean isBound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +31,7 @@ public class LoginActivity extends AppCompatActivity implements ILoginView {
         setContentView(R.layout.activity_login);
 
         initUI();
+        loginPresenter = new LoginPresenter(this);
 
         btnSingIn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,8 +52,7 @@ public class LoginActivity extends AppCompatActivity implements ILoginView {
     public void onStart() {
         super.onStart();
         Intent intentService = new Intent(this, NetworkService.class);
-        bindService(intentService, connection, Context.BIND_AUTO_CREATE);
-        loginPresenter = new LoginPresenter(this);
+        isBound = bindService(intentService, this, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -81,32 +80,27 @@ public class LoginActivity extends AppCompatActivity implements ILoginView {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         loginPresenter.onDestroy();
+        super.onDestroy();
     }
-
-    private ServiceConnection connection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            NetworkService.LocalBinder binder = (NetworkService.LocalBinder) service;
-            networkService = binder.getService();
-            loginPresenter.setNetworkService(networkService);
-            isBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            isBound = false;
-        }
-    };
 
     @Override
     public void onStop() {
-        super.onStop();
         if (isBound) {
-            unbindService(connection);
+            unbindService(this);
             isBound = false;
         }
+        super.onStop();
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        NetworkService.LocalBinder binder = (NetworkService.LocalBinder) service;
+        loginPresenter.setNetworkService(binder.getService());
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        isBound = false;
     }
 }
