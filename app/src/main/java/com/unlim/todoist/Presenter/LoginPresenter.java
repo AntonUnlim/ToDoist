@@ -24,19 +24,24 @@ public class LoginPresenter implements ILoginPresenter, ILoginModel.OnLogin {
     @Override
     public void onDestroy() {
         this.loginView = null;
+        this.networkService = null;
     }
 
     @Override
     public void onSuccess(LoginResponse loginResponse) {
-        if (loginResponse.getErrCode() == 200 && !loginResponse.getToken().isEmpty()) {
-            loginView.onLoginResult(true, Integer.toString(loginResponse.getErrCode()));
-        } else {
-            loginView.onLoginResult(false, loginResponse.getErrMessage());
+        if (loginView != null) {
+            if (loginResponse.getErrCode() == 200 && !loginResponse.getToken().isEmpty()) {
+                loginView.onLoginResult(true, Integer.toString(loginResponse.getErrCode()));
+            } else {
+                loginView.onLoginResult(false, loginResponse.getErrMessage());
+            }
         }
     }
 
     @Override
     public void onFailure(Throwable t) {
-        loginView.onLoginResult(false, t.getMessage());
+        if (loginView != null) {
+            loginView.onLoginResult(false, t.getMessage());
+        }
     }
 }
