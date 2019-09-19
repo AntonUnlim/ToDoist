@@ -5,12 +5,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NetworkConnection {
     private static final String BASE_URL = "http://demo0283530.mockable.io/todoist/";
+    private static Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
 
     public static ILoginAPI getLoginAPI() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
         ILoginAPI loginAPI = retrofit.create(ILoginAPI.class);
         return loginAPI;
     }

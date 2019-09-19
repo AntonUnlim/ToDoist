@@ -18,7 +18,9 @@ public class LoginPresenter implements ILoginPresenter, ILoginModel.OnLogin {
 
     @Override
     public void tryToLogin(String login, String password) {
-        networkService.tryToLogin(this, login, password);
+        if (networkService != null) {
+            networkService.tryToLogin(this, login, password);
+        }
     }
 
     @Override
