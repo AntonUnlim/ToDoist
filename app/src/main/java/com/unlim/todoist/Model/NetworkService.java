@@ -12,17 +12,11 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NetworkService extends Service implements ILoginModel {
-    private final String BASE_URL = "http://demo0283530.mockable.io/todoist/";
     private IBinder binder = new LocalBinder();
 
     @Override
     public void tryToLogin(final OnLogin onLogin, final String login, String password) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        ILoginAPI loginAPIService = retrofit.create(ILoginAPI.class);
-        Call<LoginResponse> loginResponseCall = loginAPIService.getLoginResponse(login, password);
+        Call<LoginResponse> loginResponseCall = NetworkConnection.getLoginAPI().getLoginResponse(login, password);
         loginResponseCall.enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
