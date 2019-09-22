@@ -15,14 +15,16 @@
             android:layout_height="wrap_content"
             android:hint="@string/login_hint"
             android:maxLength="30"
-            android:id="@+id/et_login"/>
+            android:id="@+id/et_login"
+            android:text="test_login"/>
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/password_hint"
             android:maxLength="50"
             android:id="@+id/et_password"
-            android:inputType="textPassword"/>
+            android:inputType="textPassword"
+            android:text="123456789"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

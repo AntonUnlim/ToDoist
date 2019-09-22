@@ -4,4 +4,6 @@
     <string name="password_hint">password</string>
     <string name="sign_in">Sign In</string>
     <string name="welcome">WELCOME</string>
+    <string name="todolist_title">ToDos list</string>
+    <string name="priority_title">Priority</string>
 </resources>

@@ -8,10 +8,8 @@ import android.os.IBinder;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
-public class NetworkService extends Service implements ILoginModel {
+public class NetworkService extends Service implements ILoginModel, IToDoListModel {
     private IBinder binder = new LocalBinder();
 
     @Override
@@ -36,6 +34,29 @@ public class NetworkService extends Service implements ILoginModel {
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
                 onLogin.onFailure(t);
+            }
+        });
+    }
+
+
+    @Override
+    public void getToDoList(final OnGetToDoList onGetToDoList, int userID) {
+        Call<ToDoListResponse> toDoListResponseCall = NetworkConnection.getToDoListAPI().getToDoListResponse(userID);
+        toDoListResponseCall.enqueue(new Callback<ToDoListResponse>() {
+            @Override
+            public void onResponse(Call<ToDoListResponse> call, Response<ToDoListResponse> response) {
+                ToDoListResponse toDoListResponse;
+                if (response.code() == 200) {
+                    toDoListResponse = response.body();
+                } else {
+                    toDoListResponse = new ToDoListResponse();
+                }
+                onGetToDoList.onSuccess(toDoListResponse);
+            }
+
+            @Override
+            public void onFailure(Call<ToDoListResponse> call, Throwable t) {
+                onGetToDoList.onFailure(t);
             }
         });
     }

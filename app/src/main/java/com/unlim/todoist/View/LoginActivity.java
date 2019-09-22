@@ -58,7 +58,7 @@ public class LoginActivity extends AppCompatActivity implements ILoginView, Serv
     @Override
     public void onLoginResult(boolean resultOk, String message) {
         if (resultOk) {
-            Intent intent = new Intent(this, MainActivity.class);
+            Intent intent = new Intent(this, ToDoListActivity.class);
             startActivity(intent);
             finish();
         } else {
