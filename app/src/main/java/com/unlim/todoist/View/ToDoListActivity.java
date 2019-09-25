@@ -7,12 +7,11 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
+import com.unlim.todoist.Model.Database;
 import com.unlim.todoist.Model.NetworkService;
 import com.unlim.todoist.Model.ToDo;
 import com.unlim.todoist.Presenter.IToDoListPresenter;
@@ -32,30 +31,28 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo_list);
         initUI();
-
         toDoListPresenter = new ToDoListPresenter(this);
-
+        Database.setContentResolver(getContentResolver());
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        onProgressBarEnabled(true);
+        setProgressBarVisible(true);
         Intent intentService = new Intent(this, NetworkService.class);
         isBound = bindService(intentService, this, Context.BIND_AUTO_CREATE);
-
     }
 
     @Override
-    public void onToDoListResult(List<ToDo> toDoList) {
-        onProgressBarEnabled(false);
+    public void getToDoListFromServiceResult(List<ToDo> toDoList) {
+        setProgressBarVisible(false);
         toDoCurrentList = toDoList;
         fillListView();
     }
 
     @Override
-    public void onProgressBarEnabled(boolean isEnabled) {
-        if (isEnabled) {
+    public void setProgressBarVisible(boolean isVisible) {
+        if (isVisible) {
             toDoListView.setVisibility(View.INVISIBLE);
             toDoListProgressBar.setVisibility(View.VISIBLE);
         } else {
@@ -84,7 +81,7 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
         NetworkService.LocalBinder binder = (NetworkService.LocalBinder) service;
         toDoListPresenter.setNetworkService(binder.getService());
         if (isBound) {
-            toDoListPresenter.getToDoList(1);
+            toDoListPresenter.getToDoListFromService(1);
         }
     }
 
@@ -102,6 +99,10 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
         ToDoListAdapter toDoListAdapter = new ToDoListAdapter(this, R.layout.todolist_item, toDoCurrentList);
         toDoListView.setAdapter(toDoListAdapter);
         toDoListAdapter.notifyDataSetChanged();
+    }
 
+    @Override
+    public Context getContext() {
+        return getApplicationContext();
     }
 }

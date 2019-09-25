@@ -38,7 +38,6 @@ public class NetworkService extends Service implements ILoginModel, IToDoListMod
         });
     }
 
-
     @Override
     public void getToDoList(final OnGetToDoList onGetToDoList, int userID) {
         Call<ToDoListResponse> toDoListResponseCall = NetworkConnection.getToDoListAPI().getToDoListResponse(userID);

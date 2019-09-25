@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Objects;
 
@@ -48,7 +49,7 @@ public class ToDo {
     }
 
     public String getDeadline() {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return dateFormat.format(deadline);
     }
 
@@ -62,6 +63,10 @@ public class ToDo {
             priorityText = "L";
         }
         return priorityText;
+    }
+
+    public int getIntPriority() {
+        return priority;
     }
 
     public void setPriority(int priority) {
@@ -81,11 +86,16 @@ public class ToDo {
         return id == toDo.id &&
                 priority == toDo.priority &&
                 name.equals(toDo.name) &&
+                Objects.equals(description, toDo.description) &&
                 deadline.equals(toDo.deadline);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, name, deadline, priority);
+    }
+
+    public boolean isExpired() {
+        return deadline.before(new Date());
     }
 }

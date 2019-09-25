@@ -1,6 +1,7 @@
 package com.unlim.todoist.View;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +38,10 @@ public class ToDoListAdapter extends ArrayAdapter<ToDo> {
         deadlineTextView.setText(currentToDo.getDeadline());
         priorityTextView.setText(currentToDo.getPriority());
         descriptionTextView.setText(currentToDo.getDescription());
+
+        if (currentToDo.isExpired()) {
+            view.setBackgroundColor(Color.rgb(255, 157, 160));
+        }
 
         return view;
     }

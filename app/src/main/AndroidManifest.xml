@@ -3,6 +3,7 @@
     package="com.unlim.todoist">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
@@ -22,6 +23,15 @@
         </activity>
 
         <service android:name=".Model.NetworkService" />
+        <provider
+            android:authorities="com.unlim.todoist.provider"
+            android:name="com.unlim.todoist.Model.ToDoProvider"
+            android:exported="false"/>
+        <receiver android:name=".Presenter.BootBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
