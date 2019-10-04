@@ -15,8 +15,8 @@ public class BootBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(ACTION)) {
-            Database.setContentResolver(context.getContentResolver());
-            List<ToDo> notExpiredToDoList = Database.getNotExpiredToDos();
+            Database database = new Database(context.getContentResolver());
+            List<ToDo> notExpiredToDoList = database.getNotExpiredToDos();
             if (!notExpiredToDoList.isEmpty()) {
                 ToDoNotification toDoNotification = new ToDoNotification(context);
                 for (ToDo toDo : notExpiredToDoList) {

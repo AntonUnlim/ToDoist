@@ -11,12 +11,10 @@ public class NetworkConnection {
             .build();
 
     public static ILoginAPI getLoginAPI() {
-        ILoginAPI loginAPI = retrofit.create(ILoginAPI.class);
-        return loginAPI;
+        return retrofit.create(ILoginAPI.class);
     }
 
     public static IToDoListAPI getToDoListAPI() {
-        IToDoListAPI toDoListAPI = retrofit.create(IToDoListAPI.class);
-        return toDoListAPI;
+        return retrofit.create(IToDoListAPI.class);
     }
 }

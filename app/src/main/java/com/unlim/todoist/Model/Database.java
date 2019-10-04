@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class Database {
-    private static ContentResolver appContentResolver;
+    private ContentResolver contentResolver;
     static final String TODO_TABLE_NAME = "ToDo";
     static final String AUTHORITY = "com.unlim.todoist.provider";
-    private static final Uri CONTENT_AUTHORITY_URI = Uri.parse("content://" + AUTHORITY);
+    private final Uri CONTENT_AUTHORITY_URI = Uri.parse("content://" + AUTHORITY);
 
     static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd." + AUTHORITY + "." + TODO_TABLE_NAME;
     static final String CONTENT_ITEM_TYPE= "vnd.android.cursor.item/vnd." + AUTHORITY + "." + TODO_TABLE_NAME;
@@ -32,26 +32,27 @@ public class Database {
         private Columns(){}
     }
 
-    public static void setContentResolver(ContentResolver contentResolver) {
-        appContentResolver = contentResolver;
+    public Database(ContentResolver contentResolver) {
+        this.contentResolver = contentResolver;
     }
 
-    private static final Uri CONTENT_URI = Uri.withAppendedPath(CONTENT_AUTHORITY_URI, TODO_TABLE_NAME);
+    private final Uri CONTENT_URI = Uri.withAppendedPath(CONTENT_AUTHORITY_URI, TODO_TABLE_NAME);
 
-    static Uri buildToDoUri(long id) {
+    Uri buildToDoUri(long id) {
         return ContentUris.withAppendedId(CONTENT_URI, id);
     }
 
-    static long getToDoID(Uri uri) {
+    long getToDoID(Uri uri) {
         return ContentUris.parseId(uri);
     }
 
-    public static void saveToDoListToDB(List<ToDo> newToDoList) {
+    public int saveToDoListToDB(List<ToDo> newToDoList) {
+        int rowsCount = 0;
         ContentValues contentValues = new ContentValues();
         List<ToDo> currentToDoList = getToDoListFromDB();
         for(ToDo newToDo : newToDoList) {
-            ToDo oldToDo = isExistsByID(currentToDoList, newToDo);
-            if(oldToDo != null) {
+            if(isExistsByID(currentToDoList, newToDo)) {
+                ToDo oldToDo = getToDoByID(currentToDoList, newToDo.getId());
                 if (!newToDo.getName().equals(oldToDo.getName()) ||
                         !Objects.equals(newToDo.getDescription(), oldToDo.getDescription()) ||
                         !newToDo.getDeadline().equals(oldToDo.getDeadline()) ||
@@ -62,7 +63,7 @@ public class Database {
                     contentValues.put(Columns.TODO_PRIORITY, newToDo.getIntPriority());
                     String selection = Columns.TODO_ID + " = ?";
                     String[] args = {String.valueOf(newToDo.getId())};
-                    appContentResolver.update(CONTENT_URI, contentValues, selection, args);
+                    rowsCount = contentResolver.update(CONTENT_URI, contentValues, selection, args);
                     currentToDoList = getToDoListFromDB();
                 }
             } else {
@@ -71,12 +72,15 @@ public class Database {
                 contentValues.put(Columns.TODO_DESCRIPTION, newToDo.getDescription());
                 contentValues.put(Columns.TODO_DEADLINE, newToDo.getDeadline());
                 contentValues.put(Columns.TODO_PRIORITY, newToDo.getIntPriority());
-                appContentResolver.insert(CONTENT_URI, contentValues);
+                ContentValues[] cvArr = new ContentValues[1];
+                cvArr[0] = contentValues;
+                rowsCount = contentResolver.bulkInsert(CONTENT_URI, cvArr);
             }
         }
+        return rowsCount;
     }
 
-    public static List<ToDo> getToDoListFromDB() {
+    public List<ToDo> getToDoListFromDB() {
         List<ToDo> returnList = new ArrayList<>();
         String[] projection = {
                 Columns.TODO_ID,
@@ -85,7 +89,7 @@ public class Database {
                 Columns.TODO_DEADLINE,
                 Columns.TODO_PRIORITY
         };
-        Cursor cursor = appContentResolver.query(CONTENT_URI,
+        Cursor cursor = contentResolver.query(CONTENT_URI,
                 projection,
                 null,
                 null,
@@ -111,20 +115,20 @@ public class Database {
         return returnList;
     }
 
-    public static void deleteToDoListFromDB(List<Integer> listToDelete) {
+    public void deleteToDoListFromDB(List<Integer> listToDelete) {
         for(Integer i : listToDelete) {
-            appContentResolver.delete(buildToDoUri(i), null, null);
+            contentResolver.delete(buildToDoUri(i), null, null);
         }
     }
 
-    private static ToDo isExistsByID(List<ToDo> list, ToDo toDo) {
+    private boolean isExistsByID(List<ToDo> list, ToDo toDo) {
         for(ToDo existingToDo : list) {
-            if (existingToDo.getId() == toDo.getId()) return existingToDo;
+            if (existingToDo.getId() == toDo.getId()) return true;
         }
-        return null;
+        return false;
     }
 
-    public static List<ToDo> getNotExpiredToDos() {
+    public List<ToDo> getNotExpiredToDos() {
         List<ToDo> currentToDoList = getToDoListFromDB();
         List<ToDo> notExpiredList = new ArrayList<>();
         for (ToDo toDo : currentToDoList) {
@@ -133,5 +137,12 @@ public class Database {
             }
         }
         return notExpiredList;
+    }
+
+    private ToDo getToDoByID(List<ToDo> toDos, int id) {
+        for (ToDo toDo : toDos) {
+            if(toDo.getId() == id) return toDo;
+        }
+        return null;
     }
 }

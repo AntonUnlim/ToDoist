@@ -10,6 +10,7 @@ import android.net.Uri;
 
 public class ToDoProvider extends ContentProvider {
     private DatabaseHelper dbOpenHelper;
+    private Database database;
     private static final UriMatcher uriMatcher = buildUriMatcher();
 
     public static final int TODO_ALL = 100;
@@ -25,6 +26,7 @@ public class ToDoProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         dbOpenHelper = new DatabaseHelper(getContext());
+        database = new Database(this.getContext().getContentResolver());
         return true;
     }
 
@@ -38,8 +40,8 @@ public class ToDoProvider extends ContentProvider {
                 break;
             case TODO_ID:
                 queryBuilder.setTables(Database.TODO_TABLE_NAME);
-                long toDoID = Database.getToDoID(uri);
-                queryBuilder.appendWhere(Database.Columns.TODO_ID + "=" + toDoID);
+                long toDoID = database.getToDoID(uri);
+                queryBuilder.appendWhere(Database.Columns.TODO_ID + " = " + toDoID);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown Uri" + uri);
@@ -63,25 +65,27 @@ public class ToDoProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
+        return null;
+    }
+
+    @Override
+    public int bulkInsert(Uri uri, ContentValues[] contentValues) {
         final int match = uriMatcher.match(uri);
         final SQLiteDatabase db;
-        Uri returnUri;
-        long recordId;
+        int numInserted = 0;
 
         switch (match) {
             case TODO_ALL:
                 db = dbOpenHelper.getWritableDatabase();
-                recordId = db.insert(Database.TODO_TABLE_NAME, null, contentValues);
-                if (recordId > 0) {
-                    returnUri = Database.buildToDoUri(recordId);
-                } else {
-                    throw new android.database.SQLException("Failed to insert: " + uri.toString());
+                for (ContentValues cv : contentValues) {
+                    long newID = db.insert(Database.TODO_TABLE_NAME, null, cv);
+                    if (newID <= 0) {
+                        return -1;
+                    }
                 }
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown Uri: " + uri);
+                numInserted = contentValues.length;
         }
-        return returnUri;
+        return numInserted;
     }
 
     @Override
@@ -91,11 +95,11 @@ public class ToDoProvider extends ContentProvider {
         String selectionCriteria = selection;
 
         if (match != TODO_ALL && match != TODO_ID) {
-            throw new IllegalArgumentException("Unknown Uri: " + uri);
+            return -1;
         }
 
         if (match == TODO_ID) {
-            long toDoID = Database.getToDoID(uri);
+            long toDoID = database.getToDoID(uri);
             selectionCriteria = Database.Columns.TODO_ID + "=" + toDoID;
             if ((selection != null) && (selection.length() > 0)) {
                 selectionCriteria += " AND (" + selection + ")";
@@ -110,10 +114,10 @@ public class ToDoProvider extends ContentProvider {
         final SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
         String selectionCriteria = selection;
         if (match != TODO_ALL && match != TODO_ID) {
-            throw new IllegalArgumentException("Unknown Uri: " + uri);
+            return -1;
         }
         if (match == TODO_ID) {
-            long toDoID = Database.getToDoID(uri);
+            long toDoID = database.getToDoID(uri);
             selectionCriteria = Database.Columns.TODO_ID + "=" + toDoID;
             if ((selection != null) && (selection.length() > 0)) {
                 selectionCriteria += " AND (" + selection + ")";

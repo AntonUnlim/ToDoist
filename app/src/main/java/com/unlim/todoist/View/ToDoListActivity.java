@@ -7,11 +7,12 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
-import com.unlim.todoist.Model.Database;
 import com.unlim.todoist.Model.NetworkService;
 import com.unlim.todoist.Model.ToDo;
 import com.unlim.todoist.Presenter.IToDoListPresenter;
@@ -22,17 +23,18 @@ import java.util.List;
 
 public class ToDoListActivity extends AppCompatActivity implements IToDoListView, ServiceConnection {
     private IToDoListPresenter toDoListPresenter;
-    private List<ToDo> toDoCurrentList;
     private ProgressBar toDoListProgressBar;
-    private ListView toDoListView;
+    private RecyclerView toDoRecyclerView;
     private boolean isBound;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo_list);
         initUI();
         toDoListPresenter = new ToDoListPresenter(this);
-        Database.setContentResolver(getContentResolver());
+        toDoListPresenter.setDatabase(this);
+        toDoListPresenter.setNotifications(this);
     }
 
     @Override
@@ -46,17 +48,16 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
     @Override
     public void getToDoListFromServiceResult(List<ToDo> toDoList) {
         setProgressBarVisible(false);
-        toDoCurrentList = toDoList;
-        fillListView();
+        fillListView(toDoList);
     }
 
     @Override
     public void setProgressBarVisible(boolean isVisible) {
         if (isVisible) {
-            toDoListView.setVisibility(View.INVISIBLE);
+            toDoRecyclerView.setVisibility(View.INVISIBLE);
             toDoListProgressBar.setVisibility(View.VISIBLE);
         } else {
-            toDoListView.setVisibility(View.VISIBLE);
+            toDoRecyclerView.setVisibility(View.VISIBLE);
             toDoListProgressBar.setVisibility(View.INVISIBLE);
         }
     }
@@ -92,17 +93,18 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
 
     private void initUI() {
         toDoListProgressBar = (ProgressBar) findViewById(R.id.todolist_progress_bar);
-        toDoListView = (ListView) findViewById(R.id.todolist_list_view);
+        toDoRecyclerView = (RecyclerView) findViewById(R.id.todolist_recycler_view);
+        toDoRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    private void fillListView() {
-        ToDoListAdapter toDoListAdapter = new ToDoListAdapter(this, R.layout.todolist_item, toDoCurrentList);
-        toDoListView.setAdapter(toDoListAdapter);
-        toDoListAdapter.notifyDataSetChanged();
+    private void fillListView(List<ToDo> toDoList) {
+        ToDoListAdapter toDoListAdapter = new ToDoListAdapter();
+        toDoListAdapter.setItems(toDoList);
+        toDoRecyclerView.setAdapter(toDoListAdapter);
     }
 
     @Override
-    public Context getContext() {
-        return getApplicationContext();
+    public void showToast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_LONG).show();
     }
 }
