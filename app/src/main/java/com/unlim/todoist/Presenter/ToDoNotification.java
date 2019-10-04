@@ -25,7 +25,7 @@ public class ToDoNotification extends Notification {
         taskStackBuilder.addNextIntent(toDoListActivityIntent);
         PendingIntent pendingIntent = taskStackBuilder.getPendingIntent(1, PendingIntent.FLAG_UPDATE_CURRENT);
         this.nBuilder = new Notification.Builder(context)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.baseline_notification_important_black_18dp)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent);
         notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
