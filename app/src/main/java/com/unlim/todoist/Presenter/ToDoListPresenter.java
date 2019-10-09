@@ -11,6 +11,8 @@ import java.util.List;
 public class ToDoListPresenter implements IToDoListPresenter, IToDoListModel.OnGetToDoList {
     private IToDoListView toDoListView;
     private IToDoListModel networkService;
+    private Database database;
+    private ToDoNotification toDoNotification;
 
     public ToDoListPresenter (IToDoListView toDoListView) {
         this.toDoListView = toDoListView;
@@ -21,10 +23,15 @@ public class ToDoListPresenter implements IToDoListPresenter, IToDoListModel.OnG
         if (toDoListView != null) {
             List<ToDo> currentToDoList = toDoListResponse.getCurrentList();
             List<Integer> toDoListToDelete = toDoListResponse.getDeleteList();
-            Database.deleteToDoListFromDB(toDoListToDelete);
-            Database.saveToDoListToDB(currentToDoList);
-            toDoListView.getToDoListFromServiceResult(Database.getToDoListFromDB());
-            notExpiredToDosNotify();
+            if (database != null) {
+                database.deleteToDoListFromDB(toDoListToDelete);
+                int insertResult = database.saveToDoListToDB(currentToDoList);
+                if (insertResult == -1) {
+                    toDoListView.showToast("Something went wrong!");
+                }
+                toDoListView.getToDoListFromServiceResult(database.getToDoListFromDB());
+                notExpiredToDosNotify();
+            }
         }
     }
 
@@ -34,6 +41,16 @@ public class ToDoListPresenter implements IToDoListPresenter, IToDoListModel.OnG
     @Override
     public void setNetworkService(IToDoListModel networkService) {
         this.networkService = networkService;
+    }
+
+    @Override
+    public void setDatabase(Database database) {
+        this.database = database;
+    }
+
+    @Override
+    public void setNotifications(ToDoNotification toDoNotification) {
+        this.toDoNotification = toDoNotification;
     }
 
     @Override
@@ -47,14 +64,17 @@ public class ToDoListPresenter implements IToDoListPresenter, IToDoListModel.OnG
     public void onDestroy() {
         this.toDoListView = null;
         this.networkService = null;
+        this.database = null;
+        this.toDoNotification = null;
     }
 
     private void notExpiredToDosNotify() {
-        ToDoNotification toDoNotification = new ToDoNotification(toDoListView.getContext());
-        List<ToDo> notExpiredToDoList = Database.getNotExpiredToDos();
+        List<ToDo> notExpiredToDoList = database.getNotExpiredToDos();
         if (!notExpiredToDoList.isEmpty()) {
             for (ToDo toDo : notExpiredToDoList) {
-                toDoNotification.create(toDo.getId(), toDo.getName(), toDo.getDescription());
+                if (toDoNotification != null) {
+                    toDoNotification.create(toDo.getId(), toDo.getName(), toDo.getDescription());
+                }
             }
         }
     }
