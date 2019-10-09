@@ -1,7 +1,5 @@
 package com.unlim.todoist.Presenter;
 
-import android.content.Context;
-
 import com.unlim.todoist.Model.IToDoListModel;
 import com.unlim.todoist.Model.ToDo;
 import com.unlim.todoist.Model.Database;
@@ -46,13 +44,13 @@ public class ToDoListPresenter implements IToDoListPresenter, IToDoListModel.OnG
     }
 
     @Override
-    public void setDatabase(Context context) {
-        database = new Database(context.getContentResolver());
+    public void setDatabase(Database database) {
+        this.database = database;
     }
 
     @Override
-    public void setNotifications(Context context) {
-        toDoNotification = new ToDoNotification(context);
+    public void setNotifications(ToDoNotification toDoNotification) {
+        this.toDoNotification = toDoNotification;
     }
 
     @Override

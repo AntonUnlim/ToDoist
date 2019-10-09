@@ -13,10 +13,12 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.unlim.todoist.Model.Database;
 import com.unlim.todoist.Model.NetworkService;
 import com.unlim.todoist.Model.ToDo;
 import com.unlim.todoist.Presenter.IToDoListPresenter;
 import com.unlim.todoist.Presenter.ToDoListPresenter;
+import com.unlim.todoist.Presenter.ToDoNotification;
 import com.unlim.todoist.R;
 
 import java.util.List;
@@ -26,6 +28,9 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
     private ProgressBar toDoListProgressBar;
     private RecyclerView toDoRecyclerView;
     private boolean isBound;
+    private Database database;
+    private ToDoNotification toDoNotification;
+    private ToDoListAdapter toDoListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,8 +38,10 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
         setContentView(R.layout.activity_todo_list);
         initUI();
         toDoListPresenter = new ToDoListPresenter(this);
-        toDoListPresenter.setDatabase(this);
-        toDoListPresenter.setNotifications(this);
+        database = new Database(this.getContentResolver());
+        toDoListPresenter.setDatabase(database);
+        toDoNotification = new ToDoNotification(this);
+        toDoListPresenter.setNotifications(toDoNotification);
     }
 
     @Override
@@ -64,6 +71,8 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
 
     @Override
     public void onDestroy() {
+        database = null;
+        toDoNotification = null;
         toDoListPresenter.onDestroy();
         super.onDestroy();
     }
@@ -98,7 +107,7 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
     }
 
     private void fillListView(List<ToDo> toDoList) {
-        ToDoListAdapter toDoListAdapter = new ToDoListAdapter();
+        toDoListAdapter = new ToDoListAdapter();
         toDoListAdapter.setItems(toDoList);
         toDoRecyclerView.setAdapter(toDoListAdapter);
     }
