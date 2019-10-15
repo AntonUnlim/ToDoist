@@ -3,7 +3,7 @@
     package="com.unlim.todoist">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -12,7 +12,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".View.ToDoListActivity"></activity>
+        <activity android:name=".View.ToDoActivity"
+            android:parentActivityName=".View.ToDoListActivity" />
+        <activity android:name=".View.AddEditToDoActivity" />
+        <activity android:name=".View.ToDoListActivity" />
         <activity android:name=".View.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,10 +25,12 @@
         </activity>
 
         <service android:name=".Model.NetworkService" />
+
         <provider
+            android:name=".Model.ToDoProvider"
             android:authorities="com.unlim.todoist.provider"
-            android:name="com.unlim.todoist.Model.ToDoProvider"
-            android:exported="false"/>
+            android:exported="false" />
+
         <receiver android:name=".Presenter.BootBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

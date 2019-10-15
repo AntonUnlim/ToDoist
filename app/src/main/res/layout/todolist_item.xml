@@ -4,11 +4,16 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_margin="16dp">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_todo_id"/>
     <LinearLayout
         android:id="@+id/todo_name_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_below="@id/tv_todo_id">
         <TextView
             android:id="@+id/todo_name_text_view"
             android:layout_width="0dp"

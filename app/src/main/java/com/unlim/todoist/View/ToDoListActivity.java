@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -16,6 +18,7 @@ import android.widget.Toast;
 import com.unlim.todoist.Model.Database;
 import com.unlim.todoist.Model.NetworkService;
 import com.unlim.todoist.Model.ToDo;
+import com.unlim.todoist.Presenter.Const;
 import com.unlim.todoist.Presenter.IToDoListPresenter;
 import com.unlim.todoist.Presenter.ToDoListPresenter;
 import com.unlim.todoist.Presenter.ToDoNotification;
@@ -45,11 +48,27 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.add, menu);
+        return true;
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         setProgressBarVisible(true);
-        Intent intentService = new Intent(this, NetworkService.class);
-        isBound = bindService(intentService, this, Context.BIND_AUTO_CREATE);
+        boolean isReadToDosFromDB = getIntent().getBooleanExtra(Const.INTENT_IS_READ_FROM_SERVER, false);
+        if (isReadToDosFromDB) {
+            Intent intentService = new Intent(this, NetworkService.class);
+            isBound = bindService(intentService, this, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setProgressBarVisible(false);
+        fillListView(database.getToDoListFromDB());
     }
 
     @Override
@@ -83,6 +102,7 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
             unbindService(this);
             isBound = false;
         }
+        getIntent().putExtra(Const.INTENT_IS_READ_FROM_SERVER, false);
         super.onStop();
     }
 
@@ -109,11 +129,36 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
     private void fillListView(List<ToDo> toDoList) {
         toDoListAdapter = new ToDoListAdapter();
         toDoListAdapter.setItems(toDoList);
+        toDoListAdapter.setOnRecyclerItemClickListener(getOnItemClickListener());
         toDoRecyclerView.setAdapter(toDoListAdapter);
+    }
+
+    private ToDoListAdapter.OnRecyclerItemClickListener getOnItemClickListener() {
+        return new ToDoListAdapter.OnRecyclerItemClickListener() {
+            @Override
+            public void onItemClick(ToDo toDo) {
+                Intent intent = new Intent(getApplicationContext(), ToDoActivity.class);
+                intent.putExtra(Const.INTENT_SELECTED_TODO, toDo);
+                startActivity(intent);
+            }
+        };
     }
 
     @Override
     public void showToast(String text) {
         Toast.makeText(this, text, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.add_menu:
+                Intent intent = new Intent(this, AddEditToDoActivity.class);
+                intent.putExtra(Const.INTENT_IS_TODO_ADD, true);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

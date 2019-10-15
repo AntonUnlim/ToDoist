@@ -8,4 +8,17 @@
     <string name="priority_title">Priority</string>
     <string name="channel_name">channel_name</string>
     <string name="channel_description">channel_description</string>
+    <string name="add">Add</string>
+    <string name="todo_name">ToDo name</string>
+    <string name="todo_description">ToDo description</string>
+    <string name="deadline">Deadline</string>
+    <string name="priority">Priority</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="attention">Attention</string>
+    <string name="are_you_sure_delete_todo">Are you shure you want to delete ToDo?</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
 </resources>

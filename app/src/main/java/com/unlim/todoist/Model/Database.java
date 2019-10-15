@@ -6,6 +6,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 
+import com.unlim.todoist.Presenter.Const;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -48,34 +50,8 @@ public class Database {
 
     public int saveToDoListToDB(List<ToDo> newToDoList) {
         int rowsCount = 0;
-        ContentValues contentValues = new ContentValues();
-        List<ToDo> currentToDoList = getToDoListFromDB();
         for(ToDo newToDo : newToDoList) {
-            if(isExistsByID(currentToDoList, newToDo)) {
-                ToDo oldToDo = getToDoByID(currentToDoList, newToDo.getId());
-                if (!newToDo.getName().equals(oldToDo.getName()) ||
-                        !Objects.equals(newToDo.getDescription(), oldToDo.getDescription()) ||
-                        !newToDo.getDeadline().equals(oldToDo.getDeadline()) ||
-                        !newToDo.getPriority().equals(oldToDo.getPriority())) {
-                    contentValues.put(Columns.TODO_NAME, newToDo.getName());
-                    contentValues.put(Columns.TODO_DESCRIPTION, newToDo.getDescription());
-                    contentValues.put(Columns.TODO_DEADLINE, newToDo.getDeadline());
-                    contentValues.put(Columns.TODO_PRIORITY, newToDo.getIntPriority());
-                    String selection = Columns.TODO_ID + " = ?";
-                    String[] args = {String.valueOf(newToDo.getId())};
-                    rowsCount = contentResolver.update(CONTENT_URI, contentValues, selection, args);
-                    currentToDoList = getToDoListFromDB();
-                }
-            } else {
-                currentToDoList.add(newToDo);
-                contentValues.put(Columns.TODO_NAME, newToDo.getName());
-                contentValues.put(Columns.TODO_DESCRIPTION, newToDo.getDescription());
-                contentValues.put(Columns.TODO_DEADLINE, newToDo.getDeadline());
-                contentValues.put(Columns.TODO_PRIORITY, newToDo.getIntPriority());
-                ContentValues[] cvArr = new ContentValues[1];
-                cvArr[0] = contentValues;
-                rowsCount = contentResolver.bulkInsert(CONTENT_URI, cvArr);
-            }
+            saveToDoToDB(newToDo);
         }
         return rowsCount;
     }
@@ -101,12 +77,14 @@ public class Database {
                 String description = cursor.getString(cursor.getColumnIndex(Columns.TODO_DESCRIPTION));
                 Date deadline = null;
                 try {
-                    deadline = new SimpleDateFormat("yyyy-MM-dd").parse(cursor.getString(cursor.getColumnIndex(Columns.TODO_DEADLINE)));
+                    deadline = new SimpleDateFormat(Const.DATE_FORMAT).parse(cursor.getString(cursor.getColumnIndex(Columns.TODO_DEADLINE)));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
                 int priority = cursor.getInt(cursor.getColumnIndex(Columns.TODO_PRIORITY));
-                returnList.add(new ToDo(id, name, description, deadline, priority));
+                ToDo newToDo = new ToDo(name, description, deadline, priority);
+                newToDo.setId(id);
+                returnList.add(newToDo);
             }
         }
         if (cursor != null) {
@@ -119,6 +97,10 @@ public class Database {
         for(Integer i : listToDelete) {
             contentResolver.delete(buildToDoUri(i), null, null);
         }
+    }
+
+    public int deleteToDoFromDB(ToDo toDo) {
+        return contentResolver.delete(buildToDoUri(toDo.getId()), null, null);
     }
 
     private boolean isExistsByID(List<ToDo> list, ToDo toDo) {
@@ -144,5 +126,47 @@ public class Database {
             if(toDo.getId() == id) return toDo;
         }
         return null;
+    }
+
+    public int saveToDoToDB(ToDo newToDo) {
+        int rowsCount = 0;
+        ContentValues contentValues = new ContentValues();
+        List<ToDo> currentToDoList = getToDoListFromDB();
+        if (isExistsByID(currentToDoList, newToDo)) {
+            ToDo oldToDo = getToDoByID(currentToDoList, newToDo.getId());
+            if (!newToDo.getName().equals(oldToDo.getName()) ||
+                    !Objects.equals(newToDo.getDescription(), oldToDo.getDescription()) ||
+                    !newToDo.getDeadlineStr().equals(oldToDo.getDeadlineStr()) ||
+                    !newToDo.getPriority().equals(oldToDo.getPriority())) {
+                contentValues.put(Columns.TODO_NAME, newToDo.getName());
+                contentValues.put(Columns.TODO_DESCRIPTION, newToDo.getDescription());
+                contentValues.put(Columns.TODO_DEADLINE, newToDo.getDeadlineStr());
+                contentValues.put(Columns.TODO_PRIORITY, newToDo.getIntPriority());
+                String selection = Columns.TODO_ID + " = ?";
+                String[] args = {String.valueOf(newToDo.getId())};
+                rowsCount = contentResolver.update(CONTENT_URI, contentValues, selection, args);
+            }
+        } else {
+            contentValues.put(Columns.TODO_NAME, newToDo.getName());
+            contentValues.put(Columns.TODO_DESCRIPTION, newToDo.getDescription());
+            contentValues.put(Columns.TODO_DEADLINE, newToDo.getDeadlineStr());
+            contentValues.put(Columns.TODO_PRIORITY, newToDo.getIntPriority());
+            ContentValues[] cvArr = new ContentValues[1];
+            if (newToDo.getId() == 0) {
+                cvArr[0] = contentValues;
+            } else {
+                contentValues.put(Columns.TODO_ID, newToDo.getId());
+                cvArr[0] = contentValues;
+            }
+            long newID = contentResolver.bulkInsert(CONTENT_URI, cvArr);
+            if (newID > 0) {
+                newToDo.setId((int) newID);
+                currentToDoList.add(newToDo);
+                rowsCount = 1;
+            } else {
+                rowsCount = -1;
+            }
+        }
+        return rowsCount;
     }
 }

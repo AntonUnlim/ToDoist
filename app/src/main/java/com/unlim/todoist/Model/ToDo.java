@@ -1,14 +1,16 @@
 package com.unlim.todoist.Model;
 
 import com.google.gson.annotations.SerializedName;
+import com.unlim.todoist.Presenter.Const;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Objects;
 
-public class ToDo {
+public class ToDo implements Serializable {
     @SerializedName("id")
     private int id;
     @SerializedName("name")
@@ -20,12 +22,15 @@ public class ToDo {
     @SerializedName("priority")
     private int priority;
 
-    public ToDo(int id, String name, String description, Date deadline, int priority) {
-        this.id = id;
+    public ToDo(String name, String description, Date deadline, int priority) {
         this.name = name;
         this.description = description;
         this.deadline = deadline;
         this.priority = priority;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getId() {
@@ -48,9 +53,13 @@ public class ToDo {
         this.description = description;
     }
 
-    public String getDeadline() {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    public String getDeadlineStr() {
+        DateFormat dateFormat = new SimpleDateFormat(Const.DATE_FORMAT);
         return dateFormat.format(deadline);
+    }
+
+    public Date getDeadline() {
+        return deadline;
     }
 
     public void setDeadline(Date deadline) {
@@ -61,6 +70,14 @@ public class ToDo {
         String priorityText = "H";
         if (priority <= 0) {
             priorityText = "L";
+        }
+        return priorityText;
+    }
+
+    public String getPriorityFullStr() {
+        String priorityText = "HIGH";
+        if (priority <= 0) {
+            priorityText = "LOW";
         }
         return priorityText;
     }

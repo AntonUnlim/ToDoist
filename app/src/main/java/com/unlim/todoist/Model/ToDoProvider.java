@@ -72,20 +72,20 @@ public class ToDoProvider extends ContentProvider {
     public int bulkInsert(Uri uri, ContentValues[] contentValues) {
         final int match = uriMatcher.match(uri);
         final SQLiteDatabase db;
-        int numInserted = 0;
+        long newID = 0;
 
         switch (match) {
             case TODO_ALL:
                 db = dbOpenHelper.getWritableDatabase();
                 for (ContentValues cv : contentValues) {
-                    long newID = db.insert(Database.TODO_TABLE_NAME, null, cv);
+                    newID = db.insert(Database.TODO_TABLE_NAME, null, cv);
                     if (newID <= 0) {
                         return -1;
                     }
                 }
-                numInserted = contentValues.length;
+                //numInserted = contentValues.length;
         }
-        return numInserted;
+        return (int)newID;
     }
 
     @Override
