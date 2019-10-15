@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.unlim.todoist.Model.NetworkService;
+import com.unlim.todoist.Presenter.Const;
 import com.unlim.todoist.Presenter.ILoginPresenter;
 import com.unlim.todoist.Presenter.LoginPresenter;
 import com.unlim.todoist.R;
@@ -59,6 +60,7 @@ public class LoginActivity extends AppCompatActivity implements ILoginView, Serv
     public void onLoginResult(boolean resultOk, String message) {
         if (resultOk) {
             Intent intent = new Intent(this, ToDoListActivity.class);
+            intent.putExtra(Const.INTENT_IS_READ_FROM_SERVER, true);
             startActivity(intent);
             finish();
         } else {
