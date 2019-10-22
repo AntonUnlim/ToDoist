@@ -139,7 +139,9 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
             public void onItemClick(ToDo toDo) {
                 Intent intent = new Intent(getApplicationContext(), ToDoActivity.class);
                 intent.putExtra(Const.INTENT_SELECTED_TODO, toDo);
-                startActivity(intent);
+                intent.putExtra(Const.INTENT_IS_TODO_ADD, false);
+                intent.putExtra(Const.INTENT_IS_TODO_VIEW, true);
+            startActivity(intent);
             }
         };
     }
@@ -153,8 +155,9 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_menu:
-                Intent intent = new Intent(this, AddEditToDoActivity.class);
+                Intent intent = new Intent(this, ToDoActivity.class);
                 intent.putExtra(Const.INTENT_IS_TODO_ADD, true);
+                intent.putExtra(Const.INTENT_IS_TODO_VIEW, false);
                 startActivity(intent);
                 return true;
             default:

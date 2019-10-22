@@ -1,15 +1,13 @@
 package com.unlim.todoist.View;
 
-import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,51 +25,38 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public class AddEditToDoActivity extends AppCompatActivity implements IAddEditToDoView {
+public class AddEditToDoFrag extends Fragment implements IAddEditToDoView {
 
     private IAddEditToDoPresenter addEditToDoPresenter;
     private Database database;
-
-    private TextView tvDeadline;
+    private Button btnSave, btnCancel;
     private EditText etToDoName, etToDoDescription;
     private Spinner spinPriority;
-    private ImageButton btnShowCalendar;
-    private Button btnSave, btnCancel;
+    private TextView tvDeadline;
     private String[] priorities = new String[] {"L", "H"};
-    private int DIALOG_DATE = 1;
-    private boolean isToDoAdd;
-    private ToDo currentToDo;
-
     private int currYear;
     private int currMonth;
     private int currDay;
+    private boolean isToDoAdd;
+    private ToDo currentToDo;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_edit_to_do);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saveInstanceState) {
+        View v = inflater.inflate(R.layout.add_edit_todo_frag, null);
+        initUI(v);
 
-        isToDoAdd = getIntent().getBooleanExtra(Const.INTENT_IS_TODO_ADD, true);
-        if (!isToDoAdd) {
-            currentToDo = (ToDo)getIntent().getSerializableExtra(Const.INTENT_TODO_EDIT);
-        }
-
-        initUI();
         addEditToDoPresenter = new AddEditToDoPresenter(this);
-        database = new Database(this.getContentResolver());
+        database = new Database(getActivity().getContentResolver());
         addEditToDoPresenter.setDatabase(database);
-
-        btnShowCalendar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDialog(DIALOG_DATE); // deprecated
-            }
-        });
 
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                if (isToDoAdd) {
+                    getActivity().finish();
+                } else {
+                    ((ToDoActivity)getActivity()).showViewFragment();
+                }
             }
         });
 
@@ -85,36 +70,41 @@ public class AddEditToDoActivity extends AppCompatActivity implements IAddEditTo
                 }
             }
         });
+
+        return v;
     }
 
     @Override
-    protected Dialog onCreateDialog(int id) {
-        if (id == DIALOG_DATE) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                DatePickerDialog dpd = new DatePickerDialog(this, datePickCallBack, currYear, currMonth, currDay);
-                return dpd;
-            }
-        }
-        return super.onCreateDialog(id); // deprecated
+    public void setCurrentToDo(ToDo toDo) {
+        this.currentToDo = toDo;
     }
 
-    DatePickerDialog.OnDateSetListener datePickCallBack = new DatePickerDialog.OnDateSetListener() {
-        @Override
-        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-            setDeadlineText(year, month, dayOfMonth);
-        }
-    };
+    @Override
+    public void setIsToDoAdd(boolean isToDoAdd) {
+        this.isToDoAdd = isToDoAdd;
+    }
 
-    private void initUI() {
-        tvDeadline = findViewById(R.id.tv_deadline_value);
-        btnShowCalendar = findViewById(R.id.btn_get_date);
-        btnSave = findViewById(R.id.btn_todo_save);
-        btnCancel = findViewById(R.id.btn_todo_cancel);
-        etToDoName = findViewById(R.id.et_todo_name);
-        etToDoDescription = findViewById(R.id.et_todo_description);
+    @Override
+    public void showToast(String text) {
+        Toast.makeText(getContext(), text, Toast.LENGTH_LONG).show();
+    }
 
-        spinPriority = findViewById(R.id.spin_priority);
-        ArrayAdapter<String> spinAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, priorities);
+    @Override
+    public void onDestroy() {
+        database = null;
+        addEditToDoPresenter.onDestroy();
+        super.onDestroy();
+    }
+
+    private void initUI(View v) {
+        btnCancel = v.findViewById(R.id.btn_todo_cancel);
+        btnSave = v.findViewById(R.id.btn_todo_save);
+        etToDoName = v.findViewById(R.id.et_todo_name);
+        etToDoDescription = v.findViewById(R.id.et_todo_description);
+        spinPriority = v.findViewById(R.id.spin_priority);
+        tvDeadline = v.findViewById(R.id.tv_deadline_value);
+
+        ArrayAdapter<String> spinAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, priorities);
         spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinPriority.setAdapter(spinAdapter);
 
@@ -130,6 +120,7 @@ public class AddEditToDoActivity extends AppCompatActivity implements IAddEditTo
             currDay = toDoDeadline.get(Calendar.DAY_OF_MONTH);
             etToDoName.setText(currentToDo.getName());
             etToDoDescription.setText(currentToDo.getDescription());
+            spinPriority.setSelection(currentToDo.getIntPriority());
         }
         setDeadlineText(currYear, currMonth, currDay);
     }
@@ -146,7 +137,6 @@ public class AddEditToDoActivity extends AppCompatActivity implements IAddEditTo
             newToDoDeadline = new SimpleDateFormat(Const.DATE_FORMAT).parse(tvDeadline.getText().toString());
         } catch (ParseException e) {
             newToDoDeadline = Calendar.getInstance().getTime();
-            e.printStackTrace();
         }
         int priority = (spinPriority.getSelectedItem().toString().equals("H")) ? 1 : 0;
         ToDo newToDo;
@@ -162,18 +152,10 @@ public class AddEditToDoActivity extends AppCompatActivity implements IAddEditTo
             newToDo.setPriority(priority);
         }
         addEditToDoPresenter.saveToDo(newToDo);
-        finish();
-    }
-
-    @Override
-    public void showToast(String text) {
-        Toast.makeText(this, text, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onDestroy() {
-        database = null;
-        addEditToDoPresenter.onDestroy();
-        super.onDestroy();
+        if (isToDoAdd) {
+            getActivity().finish();
+        } else {
+            ((ToDoActivity) getActivity()).showViewFragment();
+        }
     }
 }
