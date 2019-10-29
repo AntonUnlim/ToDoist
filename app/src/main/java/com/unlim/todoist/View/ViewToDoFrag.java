@@ -26,6 +26,13 @@ public class ViewToDoFrag extends Fragment {
         return v;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        currentToDo = ((ToDoActivity)getActivity()).getCurrentToDo();
+        fillFields();
+    }
+
     public void setCurrentToDo(ToDo toDo) {
         this.currentToDo = toDo;
     }

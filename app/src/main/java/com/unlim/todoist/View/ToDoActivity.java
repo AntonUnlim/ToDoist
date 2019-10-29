@@ -12,39 +12,38 @@ import android.widget.Toast;
 
 import com.unlim.todoist.Model.Database;
 import com.unlim.todoist.Model.ToDo;
-import com.unlim.todoist.Presenter.Const;
+import com.unlim.todoist.Presenter.IToDoPresenter;
+import com.unlim.todoist.Presenter.ToDoPresenter;
 import com.unlim.todoist.R;
 
-public class ToDoActivity extends AppCompatActivity {
+public class ToDoActivity extends AppCompatActivity implements IToDoActivity {
 
     private AddEditToDoFrag addEditToDoFrag;
     private ViewToDoFrag viewToDoFrag;
     private FragmentTransaction fragmentTransaction;
     private FragmentManager fragmentManager;
-    private boolean isToDoAdd;
-    private boolean isToDoView;
-
     private ToDo currentToDo;
-    private Database database;
+
     private Menu menu;
+
+    private IToDoPresenter toDoPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_to_do);
-        isToDoAdd = getIntent().getBooleanExtra(Const.INTENT_IS_TODO_ADD, true);
-        isToDoView = getIntent().getBooleanExtra(Const.INTENT_IS_TODO_VIEW, false);
-        if (!isToDoAdd) {
-            currentToDo = (ToDo)getIntent().getSerializableExtra(Const.INTENT_SELECTED_TODO);
-        }
+
+        toDoPresenter = new ToDoPresenter(this);
+        toDoPresenter.setDatabase(new Database(getContentResolver()));
+        toDoPresenter.setIntent(getIntent());
+
         initUI();
-        database = new Database(getContentResolver());
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (isToDoView && !isToDoAdd) {
+        if (toDoPresenter.isCreateEditDeleteMenu()) {
             if (menu != null) {
                 menu.setGroupVisible(R.id.todo_menu_group, true);
             }
@@ -54,7 +53,7 @@ public class ToDoActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         this.menu = menu;
-        if (isToDoView && !isToDoAdd) {
+        if (toDoPresenter.isCreateEditDeleteMenu()) {
             getMenuInflater().inflate(R.menu.todo_menu, menu);
         }
         return true;
@@ -68,56 +67,24 @@ public class ToDoActivity extends AppCompatActivity {
 
     private void initUI() {
         addEditToDoFrag = new AddEditToDoFrag();
-        addEditToDoFrag.setIsToDoAdd(isToDoAdd);
         viewToDoFrag = new ViewToDoFrag();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         fragmentManager = getSupportFragmentManager();
-
-        if (isToDoView) {
-            showViewFragment();
-            viewToDoFrag.setCurrentToDo(currentToDo);
-        } else {
-            if (isToDoAdd) {
-                showAddEditFragment();
-            } else {
-                addEditToDoFrag.setCurrentToDo(currentToDo);
-            }
-        }
+        toDoPresenter.showFragment();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.home:
-                if(isToDoView) {
-                    this.finish();
-                } else {
-                    showViewFragment();
-                }
+        int id = item.getItemId();
+        switch (id) {
+            case android.R.id.home:
+                this.onBackPressed();
                 return true;
             case R.id.todo_delete:
-                AlertDialog dialog = new AlertDialog.Builder(this).create();
-                dialog.setTitle(getString(R.string.attention));
-                dialog.setMessage(getString(R.string.are_you_sure_delete_todo));
-                dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.no), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-                dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.yes), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        onDeleteToDoFromDB();
-                        finish();
-                    }
-                });
-                dialog.show();
+                toDoPresenter.onDeleteClicked();
                 return true;
             case R.id.todo_edit:
-                showAddEditFragment();
-                addEditToDoFrag.setIsToDoAdd(false);
-                addEditToDoFrag.setCurrentToDo(currentToDo);
+                toDoPresenter.onEditClicked();
                 showEditDeleteMenu(false);
                 return true;
             default:
@@ -125,33 +92,76 @@ public class ToDoActivity extends AppCompatActivity {
         }
     }
 
-    private void onDeleteToDoFromDB() {
-        int result = database.deleteToDoFromDB(currentToDo);
-        if (result > 0) {
-            Toast.makeText(this, "ToDo deleted!", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
-        }
+    @Override
+    public void showToast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onDestroy() {
-        database = null;
-        super.onDestroy();
-    }
-
-    public void showAddEditFragment() {
-        fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.frag_container, addEditToDoFrag);
-        if (isToDoView && !isToDoAdd) {
-            fragmentTransaction.addToBackStack(null);
-        }
-        fragmentTransaction.commit();
-    }
-
-    public void showViewFragment() {
+    public void showViewToDoFrag(ToDo toDo) {
+        currentToDo = toDo;
+        viewToDoFrag.setCurrentToDo(toDo);
         fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frag_container, viewToDoFrag);
         fragmentTransaction.commit();
+    }
+
+    @Override
+    public void showEditToDoFrag(ToDo toDo) {
+        fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.frag_container, addEditToDoFrag);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+        currentToDo = toDo;
+        addEditToDoFrag.setCurrentToDo(toDo);
+        addEditToDoFrag.setIsToDoAdd(false);
+    }
+
+    @Override
+    public void showAddToDoFrag() {
+        addEditToDoFrag.setIsToDoAdd(toDoPresenter.isToDoAdd());
+        fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.frag_container, addEditToDoFrag);
+        fragmentTransaction.commit();
+    }
+
+    @Override
+    public void showAlertDialogOnDelete(final ToDo toDo) {
+        AlertDialog dialog = new AlertDialog.Builder(this).create();
+        dialog.setTitle(getString(R.string.attention));
+        dialog.setMessage(getString(R.string.are_you_sure_delete_todo));
+        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.no), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        dialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                toDoPresenter.deleteToDoFromDB(toDo);
+                finish();
+            }
+        });
+        dialog.show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        int count = getSupportFragmentManager().getBackStackEntryCount();
+        if(count == 0) {
+            super.onBackPressed();
+        } else {
+            getSupportFragmentManager().popBackStack();
+        }
+    }
+
+    public void setCurrentToDo(ToDo toDo) {
+        currentToDo = toDo;
+        toDoPresenter.setCurrentToDo(toDo);
+    }
+
+    public ToDo getCurrentToDo() {
+        return currentToDo;
     }
 }

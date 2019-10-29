@@ -46,6 +46,7 @@ public class ToDoListPresenter implements IToDoListPresenter, IToDoListModel.OnG
     @Override
     public void setDatabase(Database database) {
         this.database = database;
+
     }
 
     @Override
@@ -66,6 +67,11 @@ public class ToDoListPresenter implements IToDoListPresenter, IToDoListModel.OnG
         this.networkService = null;
         this.database = null;
         this.toDoNotification = null;
+    }
+
+    @Override
+    public void getToDoListFromDB() {
+        toDoListView.getToDoListFromDB(database.getToDoListFromDB());
     }
 
     private void notExpiredToDosNotify() {

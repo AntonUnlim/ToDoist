@@ -12,8 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".View.ToDoActivity"
-            android:parentActivityName=".View.ToDoListActivity" />
+        <activity android:name=".View.ToDoActivity" />
         <activity android:name=".View.ToDoListActivity" />
         <activity android:name=".View.LoginActivity">
             <intent-filter>
