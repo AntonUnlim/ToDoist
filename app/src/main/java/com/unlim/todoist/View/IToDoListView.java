@@ -8,4 +8,5 @@ public interface IToDoListView {
     void getToDoListFromServiceResult(List<ToDo> toDoList);
     void setProgressBarVisible(boolean isVisible);
     void showToast(String text);
+    void getToDoListFromDB(List<ToDo> toDoList);
 }

@@ -31,9 +31,9 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
     private ProgressBar toDoListProgressBar;
     private RecyclerView toDoRecyclerView;
     private boolean isBound;
-    private Database database;
     private ToDoNotification toDoNotification;
     private ToDoListAdapter toDoListAdapter;
+    private List<ToDo> toDoList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +41,7 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
         setContentView(R.layout.activity_todo_list);
         initUI();
         toDoListPresenter = new ToDoListPresenter(this);
-        database = new Database(this.getContentResolver());
-        toDoListPresenter.setDatabase(database);
+        toDoListPresenter.setDatabase(new Database(this.getContentResolver()));
         toDoNotification = new ToDoNotification(this);
         toDoListPresenter.setNotifications(toDoNotification);
     }
@@ -68,7 +67,8 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
     public void onResume() {
         super.onResume();
         setProgressBarVisible(false);
-        fillListView(database.getToDoListFromDB());
+        toDoListPresenter.getToDoListFromDB();
+        fillListView(toDoList);
     }
 
     @Override
@@ -90,7 +90,6 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
 
     @Override
     public void onDestroy() {
-        database = null;
         toDoNotification = null;
         toDoListPresenter.onDestroy();
         super.onDestroy();
@@ -149,6 +148,11 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
     @Override
     public void showToast(String text) {
         Toast.makeText(this, text, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void getToDoListFromDB(List<ToDo> toDoList) {
+        this.toDoList = toDoList;
     }
 
     @Override

@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.unlim.todoist.Model.Database;
 import com.unlim.todoist.Model.ToDo;
+import com.unlim.todoist.Model.ToDoModel;
 import com.unlim.todoist.Presenter.AddEditToDoPresenter;
 import com.unlim.todoist.Presenter.Const;
 import com.unlim.todoist.Presenter.IAddEditToDoPresenter;
@@ -28,7 +29,6 @@ import java.util.Locale;
 public class AddEditToDoFrag extends Fragment implements IAddEditToDoView {
 
     private IAddEditToDoPresenter addEditToDoPresenter;
-    private Database database;
     private Button btnSave, btnCancel;
     private EditText etToDoName, etToDoDescription;
     private Spinner spinPriority;
@@ -44,10 +44,9 @@ public class AddEditToDoFrag extends Fragment implements IAddEditToDoView {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saveInstanceState) {
         View v = inflater.inflate(R.layout.add_edit_todo_frag, null);
         initUI(v);
-
         addEditToDoPresenter = new AddEditToDoPresenter(this);
-        database = new Database(getActivity().getContentResolver());
-        addEditToDoPresenter.setDatabase(database);
+        addEditToDoPresenter.setDatabase(new Database(getActivity().getContentResolver()));
+        addEditToDoPresenter.setCurrentToDo(currentToDo);
 
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,7 +54,7 @@ public class AddEditToDoFrag extends Fragment implements IAddEditToDoView {
                 if (isToDoAdd) {
                     getActivity().finish();
                 } else {
-                    ((ToDoActivity)getActivity()).showViewFragment();
+                    getActivity().onBackPressed();
                 }
             }
         });
@@ -63,14 +62,9 @@ public class AddEditToDoFrag extends Fragment implements IAddEditToDoView {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!etToDoName.getText().toString().isEmpty() || !etToDoName.getText().toString().trim().equals("")) {
-                    saveNewToDo();
-                } else {
-                    showToast("Name can't be empty");
-                }
+                saveNewToDo();
             }
         });
-
         return v;
     }
 
@@ -91,7 +85,6 @@ public class AddEditToDoFrag extends Fragment implements IAddEditToDoView {
 
     @Override
     public void onDestroy() {
-        database = null;
         addEditToDoPresenter.onDestroy();
         super.onDestroy();
     }
@@ -132,30 +125,26 @@ public class AddEditToDoFrag extends Fragment implements IAddEditToDoView {
     }
 
     private void saveNewToDo() {
-        Date newToDoDeadline;
+        ToDoModel newToDo;
+        String newName = etToDoName.getText().toString();
+        String newDescription = etToDoDescription.getText().toString();
+        Date newDeadline;
         try {
-            newToDoDeadline = new SimpleDateFormat(Const.DATE_FORMAT).parse(tvDeadline.getText().toString());
+            newDeadline = new SimpleDateFormat(Const.DATE_FORMAT).parse(tvDeadline.getText().toString());
         } catch (ParseException e) {
-            newToDoDeadline = Calendar.getInstance().getTime();
+            newDeadline = Calendar.getInstance().getTime();
         }
-        int priority = (spinPriority.getSelectedItem().toString().equals("H")) ? 1 : 0;
-        ToDo newToDo;
-        String toDoName = etToDoName.getText().toString();
-        String toDoDescription = etToDoDescription.getText().toString();
-        if(isToDoAdd) {
-            newToDo = new ToDo(toDoName, toDoDescription, newToDoDeadline, priority);
-        } else {
-            newToDo = currentToDo;
-            newToDo.setName(toDoName);
-            newToDo.setDescription(toDoDescription);
-            newToDo.setDeadline(newToDoDeadline);
-            newToDo.setPriority(priority);
-        }
-        addEditToDoPresenter.saveToDo(newToDo);
-        if (isToDoAdd) {
-            getActivity().finish();
-        } else {
-            ((ToDoActivity) getActivity()).showViewFragment();
+        int newPriority = (spinPriority.getSelectedItem().toString().equals("H")) ? 1 : 0;
+        newToDo = new ToDoModel(newName, newDescription, newDeadline, newPriority);
+
+        int res = addEditToDoPresenter.saveToDo(newToDo);
+        if (res >= 0) {
+            if (isToDoAdd) {
+                getActivity().finish();
+            } else {
+                getActivity().onBackPressed();
+                ((ToDoActivity)getActivity()).setCurrentToDo(addEditToDoPresenter.getCurrentToDo());
+            }
         }
     }
 }

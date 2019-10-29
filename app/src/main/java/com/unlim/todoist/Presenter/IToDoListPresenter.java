@@ -9,4 +9,5 @@ public interface IToDoListPresenter {
     void setNotifications(ToDoNotification toDoNotification);
     void getToDoListFromService(int userID);
     void onDestroy();
+    void getToDoListFromDB();
 }
