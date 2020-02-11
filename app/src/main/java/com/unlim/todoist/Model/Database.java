@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Database {
+    // test changes for GItHub
     private ContentResolver contentResolver;
     static final String TODO_TABLE_NAME = "ToDo";
     static final String AUTHORITY = "com.unlim.todoist.provider";
