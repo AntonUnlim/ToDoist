@@ -1,6 +1,6 @@
 package com.unlim.todoist.Presenter;
 
-import com.unlim.todoist.Model.Database;
+import com.unlim.todoist.Model.DatabaseRoom;
 import com.unlim.todoist.Model.ToDo;
 import com.unlim.todoist.Model.ToDoModel;
 import com.unlim.todoist.View.IAddEditToDoView;
@@ -8,7 +8,7 @@ import com.unlim.todoist.View.IAddEditToDoView;
 public class AddEditToDoPresenter implements IAddEditToDoPresenter {
 
     private IAddEditToDoView addEditToDoView;
-    private Database database;
+    private DatabaseRoom database;
     private ToDo currentToDo;
 
     public AddEditToDoPresenter(IAddEditToDoView addEditToDoView) {
@@ -16,7 +16,7 @@ public class AddEditToDoPresenter implements IAddEditToDoPresenter {
     }
 
     @Override
-    public void setDatabase(Database database) {
+    public void setDatabase(DatabaseRoom database) {
         this.database = database;
     }
 
@@ -44,7 +44,7 @@ public class AddEditToDoPresenter implements IAddEditToDoPresenter {
         } else if (!toDoModel.getName().equals(currentToDo.getName())
                     || !toDoModel.getDescription().equals(currentToDo.getDescription())
                     || !toDoModel.getDeadline().equals(currentToDo.getDeadline())
-                    || toDoModel.getPriority() != currentToDo.getIntPriority()) {
+                    || toDoModel.getPriority() != currentToDo.getPriority()) {
             isSave = true;
             newToDo.setId(currentToDo.getId());
             currentToDo = newToDo;

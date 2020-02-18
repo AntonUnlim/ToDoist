@@ -1,25 +1,31 @@
 package com.unlim.todoist.Model;
 
-import com.google.gson.annotations.SerializedName;
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverters;
+
 import com.unlim.todoist.Presenter.Const;
 
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.Objects;
 
+import static android.arch.persistence.room.ColumnInfo.INTEGER;
+
+@Entity
 public class ToDo implements Serializable {
-    @SerializedName("id")
-    private int id;
-    @SerializedName("name")
+
+    @PrimaryKey
+    @ColumnInfo(name = "_id")
+    private Integer id;
     private String name;
-    @SerializedName("description")
     private String description;
-    @SerializedName("deadline")
+    @ColumnInfo(typeAffinity = INTEGER)
+    @TypeConverters({DateConverter.class})
     private Date deadline;
-    @SerializedName("priority")
     private int priority;
 
     public ToDo(String name, String description, Date deadline, int priority) {
@@ -29,11 +35,11 @@ public class ToDo implements Serializable {
         this.priority = priority;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -66,7 +72,7 @@ public class ToDo implements Serializable {
         this.deadline = deadline;
     }
 
-    public String getPriority() {
+    public String getStrPriority() {
         String priorityText = "H";
         if (priority <= 0) {
             priorityText = "L";
@@ -82,7 +88,7 @@ public class ToDo implements Serializable {
         return priorityText;
     }
 
-    public int getIntPriority() {
+    public int getPriority() {
         return priority;
     }
 

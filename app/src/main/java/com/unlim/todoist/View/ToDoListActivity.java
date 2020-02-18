@@ -15,7 +15,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.unlim.todoist.Model.Database;
+import com.unlim.todoist.Model.DatabaseRoom;
 import com.unlim.todoist.Model.NetworkService;
 import com.unlim.todoist.Model.ToDo;
 import com.unlim.todoist.Presenter.Const;
@@ -41,7 +41,7 @@ public class ToDoListActivity extends AppCompatActivity implements IToDoListView
         setContentView(R.layout.activity_todo_list);
         initUI();
         toDoListPresenter = new ToDoListPresenter(this);
-        toDoListPresenter.setDatabase(new Database(this.getContentResolver()));
+        toDoListPresenter.setDatabase(new DatabaseRoom(getApplicationContext()));
         toDoNotification = new ToDoNotification(this);
         toDoListPresenter.setNotifications(toDoNotification);
     }

@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.unlim.todoist.Model.Database;
+import com.unlim.todoist.Model.DatabaseRoom;
 import com.unlim.todoist.Model.ToDo;
 import com.unlim.todoist.Presenter.IToDoPresenter;
 import com.unlim.todoist.Presenter.ToDoPresenter;
@@ -34,7 +35,7 @@ public class ToDoActivity extends AppCompatActivity implements IToDoActivity {
         setContentView(R.layout.activity_to_do);
 
         toDoPresenter = new ToDoPresenter(this);
-        toDoPresenter.setDatabase(new Database(getContentResolver()));
+        toDoPresenter.setDatabase(new DatabaseRoom(this));
         toDoPresenter.setIntent(getIntent());
 
         initUI();

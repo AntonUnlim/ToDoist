@@ -12,7 +12,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.unlim.todoist.Model.Database;
+import com.unlim.todoist.Model.DatabaseRoom;
 import com.unlim.todoist.Model.ToDo;
 import com.unlim.todoist.Model.ToDoModel;
 import com.unlim.todoist.Presenter.AddEditToDoPresenter;
@@ -45,7 +45,7 @@ public class AddEditToDoFrag extends Fragment implements IAddEditToDoView {
         View v = inflater.inflate(R.layout.add_edit_todo_frag, null);
         initUI(v);
         addEditToDoPresenter = new AddEditToDoPresenter(this);
-        addEditToDoPresenter.setDatabase(new Database(getActivity().getContentResolver()));
+        addEditToDoPresenter.setDatabase(new DatabaseRoom(getContext()));
         addEditToDoPresenter.setCurrentToDo(currentToDo);
 
         btnCancel.setOnClickListener(new View.OnClickListener() {
@@ -113,7 +113,7 @@ public class AddEditToDoFrag extends Fragment implements IAddEditToDoView {
             currDay = toDoDeadline.get(Calendar.DAY_OF_MONTH);
             etToDoName.setText(currentToDo.getName());
             etToDoDescription.setText(currentToDo.getDescription());
-            spinPriority.setSelection(currentToDo.getIntPriority());
+            spinPriority.setSelection(currentToDo.getPriority());
         }
         setDeadlineText(currYear, currMonth, currDay);
     }

@@ -31,7 +31,7 @@ public class ToDoProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionAgrs, String sortOrder) {
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         final int match = uriMatcher.match(uri);
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         switch (match) {
@@ -47,7 +47,7 @@ public class ToDoProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unknown Uri" + uri);
         }
         SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
-        return queryBuilder.query(db, projection, selection, selectionAgrs, null, null, sortOrder);
+        return queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
     }
 
     @Override
