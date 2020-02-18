@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class Database {
-    // test changes for GItHub
     private ContentResolver contentResolver;
     static final String TODO_TABLE_NAME = "ToDo";
     static final String AUTHORITY = "com.unlim.todoist.provider";
@@ -138,11 +137,11 @@ public class Database {
             if (!newToDo.getName().equals(oldToDo.getName()) ||
                     !Objects.equals(newToDo.getDescription(), oldToDo.getDescription()) ||
                     !newToDo.getDeadlineStr().equals(oldToDo.getDeadlineStr()) ||
-                    !newToDo.getPriority().equals(oldToDo.getPriority())) {
+                    !newToDo.getStrPriority().equals(oldToDo.getStrPriority())) {
                 contentValues.put(Columns.TODO_NAME, newToDo.getName());
                 contentValues.put(Columns.TODO_DESCRIPTION, newToDo.getDescription());
                 contentValues.put(Columns.TODO_DEADLINE, newToDo.getDeadlineStr());
-                contentValues.put(Columns.TODO_PRIORITY, newToDo.getIntPriority());
+                contentValues.put(Columns.TODO_PRIORITY, newToDo.getPriority());
                 String selection = Columns.TODO_ID + " = ?";
                 String[] args = {String.valueOf(newToDo.getId())};
                 rowsCount = contentResolver.update(CONTENT_URI, contentValues, selection, args);
@@ -151,7 +150,7 @@ public class Database {
             contentValues.put(Columns.TODO_NAME, newToDo.getName());
             contentValues.put(Columns.TODO_DESCRIPTION, newToDo.getDescription());
             contentValues.put(Columns.TODO_DEADLINE, newToDo.getDeadlineStr());
-            contentValues.put(Columns.TODO_PRIORITY, newToDo.getIntPriority());
+            contentValues.put(Columns.TODO_PRIORITY, newToDo.getPriority());
             ContentValues[] cvArr = new ContentValues[1];
             if (newToDo.getId() == 0) {
                 cvArr[0] = contentValues;

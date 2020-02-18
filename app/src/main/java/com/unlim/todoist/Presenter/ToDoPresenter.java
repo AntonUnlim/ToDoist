@@ -3,12 +3,13 @@ package com.unlim.todoist.Presenter;
 import android.content.Intent;
 
 import com.unlim.todoist.Model.Database;
+import com.unlim.todoist.Model.DatabaseRoom;
 import com.unlim.todoist.Model.ToDo;
 import com.unlim.todoist.View.IToDoActivity;
 
 public class ToDoPresenter implements IToDoPresenter {
 
-    private Database database;
+    private DatabaseRoom database;
     private IToDoActivity toDoActivity;
     private ToDo currentToDo;
     private boolean isToDoAdd;
@@ -19,7 +20,7 @@ public class ToDoPresenter implements IToDoPresenter {
     }
 
     @Override
-    public void setDatabase(Database database) {
+    public void setDatabase(DatabaseRoom database) {
         this.database = database;
     }
 

@@ -42,7 +42,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
             idTextView.setText("ID: " + String.valueOf(currentToDo.getId()));
             nameTextView.setText(currentToDo.getName());
             deadlineTextView.setText(currentToDo.getDeadlineStr());
-            priorityTextView.setText(currentToDo.getPriority());
+            priorityTextView.setText(currentToDo.getStrPriority());
             descriptionTextView.setText(currentToDo.getDescription());
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

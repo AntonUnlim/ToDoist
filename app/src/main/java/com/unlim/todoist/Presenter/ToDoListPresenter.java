@@ -1,5 +1,6 @@
 package com.unlim.todoist.Presenter;
 
+import com.unlim.todoist.Model.DatabaseRoom;
 import com.unlim.todoist.Model.IToDoListModel;
 import com.unlim.todoist.Model.ToDo;
 import com.unlim.todoist.Model.Database;
@@ -11,7 +12,8 @@ import java.util.List;
 public class ToDoListPresenter implements IToDoListPresenter, IToDoListModel.OnGetToDoList {
     private IToDoListView toDoListView;
     private IToDoListModel networkService;
-    private Database database;
+    //private Database database;
+    private DatabaseRoom database;
     private ToDoNotification toDoNotification;
 
     public ToDoListPresenter (IToDoListView toDoListView) {
@@ -44,7 +46,7 @@ public class ToDoListPresenter implements IToDoListPresenter, IToDoListModel.OnG
     }
 
     @Override
-    public void setDatabase(Database database) {
+    public void setDatabase(DatabaseRoom database) {
         this.database = database;
 
     }
@@ -71,7 +73,8 @@ public class ToDoListPresenter implements IToDoListPresenter, IToDoListModel.OnG
 
     @Override
     public void getToDoListFromDB() {
-        toDoListView.getToDoListFromDB(database.getToDoListFromDB());
+        List<ToDo> temp = database.getToDoListFromDB();
+        toDoListView.getToDoListFromDB(temp);
     }
 
     private void notExpiredToDosNotify() {
